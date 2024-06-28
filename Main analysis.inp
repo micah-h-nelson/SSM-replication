@@ -1,0 +1,65 @@
+Title: 
+Code to run main analysis
+
+Data:
+  File is mplus_data_anes_2016.dat ;
+  
+Variable:
+Names are 
+     V160101 V160102 V160201 V160202 edu health health2 married_partnered
+     male income_recode income_orig disable insur relig_attend relig1 relig2
+     relig3 relig4 party_contact vote2016_clerical covi_2016 college black
+     hispanic other_r dem rep aca_favor aca_oppose white_collar work_class
+     int_class white_collar_m work_class_m int_class_m age_div age_div2
+     strong_partisan web_svy_mode income_midpt ln_income_midpt income_quint
+     income_decile income_tertile income_median ses_group ses_group1 ses_group2
+     ses_group3 ses_group4 ses_group5 ses_group6 ses_group7 org_member
+     camp_int pol_int effic1 effic2 effic3 effic4 internal_eff external_eff
+     r_union hh_union trust_gov talk_voting unemployed_all unempl_no_dis;
+
+Missing are all (-9999) ; 
+
+!Complex survey design variables
+Weight is V160101;
+Stratification is V160201;
+Cluster is V160202;
+  
+Usevariables are health2 vote2016_clerical ln_income_midpt 
+edu white_collar relig1 relig2 relig3 relig4 
+age_div age_div2 black hispanic other_r male insur 
+married_partnered dem rep unempl_no_dis;
+
+!Declare voter turnout variable as categorical  
+Categorical is vote2016_clerical;
+
+Analysis: 
+Type = complex ;
+Estimator = wlsmv ;
+Parameterization = theta ;
+
+Model:
+!Define single indicator latent variable, fixing residual variance
+hlth BY health2@1 ;
+health2@.535 ;
+
+!Define SES variable (treat indicators as formative)
+SES BY;
+SES on edu@1 ln_income_midpt white_collar; 
+SES@0;
+
+!Specify regression equations
+hlth ON SES relig1 relig2 relig3 relig4 age_div age_div2 black hispanic other_r
+male insur unempl_no_dis;
+
+vote2016_clerical ON hlth SES relig1 relig2 relig3 relig4 age_div age_div2 black 
+hispanic other_r male insur married_partnered dem rep unempl_no_dis;
+
+Model indirect:
+!Calculate indirect effects
+vote2016_clerical IND  SES ;
+
+Output:
+stdy;
+stdyx;
+
+
